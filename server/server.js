@@ -61,6 +61,14 @@ app.post('/playlist', (req, res) => {
   });
 });
 
+app.get('/playlist', (req, res) => {
+  Playlist.find().then((playlists) => {
+    res.send({ playlists });
+  }).catch((e) => {
+    res.status(400).send();
+  });
+});
+
 app.listen(port, () => {
   console.log(`started up at port ${port}`);
 });
