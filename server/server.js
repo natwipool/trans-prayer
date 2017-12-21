@@ -72,3 +72,5 @@ app.get('/playlist', (req, res) => {
 app.listen(port, () => {
   console.log(`started up at port ${port}`);
 });
+
+module.exports = { app };
