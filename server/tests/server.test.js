@@ -19,9 +19,17 @@ beforeEach((done) => {
   }).then(() => done());
 });
 
-// describe('GET /trans-prayer', () => {
-
-// });
+describe('GET /trans-prayer', () => {
+  it('should get all trans-prayers', (done) => {
+    request(app)
+    .get('/trans-prayer')
+    .expect(200)
+    .expect((res) => {
+      expect(res.body.prayers.length).toBe(40);
+    })
+    .end(done);
+  }); 
+});
 
 describe('POST /playlist', () => {
   it('should create a new playlist', (done) => {
@@ -78,5 +86,4 @@ describe('GET /playlist', () => {
       })
       .end(done);
   });
-
 });
