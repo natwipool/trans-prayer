@@ -96,9 +96,9 @@ app.get('/playlist/:id', (req, res) => {
   }
 
   Playlist.findById(id).then((doc) => {
-    // if (!doc) {
-    //   return res.status(404).send();
-    // }  
+    if (!doc) {
+      return res.status(404).send();
+    }  
     
     return Promise.all([
         doc,
