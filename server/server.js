@@ -18,7 +18,7 @@ app.get('/trans-prayer', (req, res) => {
   })
 });
 
-app.get('/trans-prayer/1', (req, res) => {
+app.get('/trans-prayer/part01', (req, res) => {
   TransPrayer.find({
     category: 'ภาค ๑ คำทำวัตรเช้า-เย็น'
   }).then((prayers) => {
@@ -28,7 +28,7 @@ app.get('/trans-prayer/1', (req, res) => {
   })
 });
 
-app.get('/trans-prayer/2', (req, res) => {
+app.get('/trans-prayer/part02', (req, res) => {
   TransPrayer.find({
     category: 'ภาต ๒ บทสวดมนต์พิเศษบางบท'
   }).then((prayers) => {
@@ -38,7 +38,7 @@ app.get('/trans-prayer/2', (req, res) => {
   })
 });
 
-app.get('/trans-prayer/3', (req, res) => {
+app.get('/trans-prayer/part03', (req, res) => {
   TransPrayer.find({
     category: 'ภาคผนวก'
   }).then((prayers) => {
@@ -46,6 +46,20 @@ app.get('/trans-prayer/3', (req, res) => {
   }).catch((e) => {
     res.status(400).send();
   })
+});
+
+app.get('/trans-prayer/:id', (req, res) => {
+  var id = req.params.id;
+
+  TransPrayer.findById(id).then((prayer) => {
+    if (!prayer) {
+      return res.status(400).send();
+    }
+
+    res.send({ prayer });
+  }).catch((e) => {
+    res.status(400).send();
+  });
 });
 
 app.post('/playlist', (req, res) => {
@@ -67,6 +81,28 @@ app.get('/playlist', (req, res) => {
   }).catch((e) => {
     res.status(400).send();
   });
+});
+
+app.get('/playlist/:id', (req, res) => {
+  var id = req.params.id;
+
+  Playlist.findById(id).then((doc) => {
+      return Promise.all([
+        doc,
+        TransPrayer.find({
+          precept: {
+            $in: doc.list
+          }
+        })
+      ]);
+    }).then(([doc, playlists]) => {
+      res.send({
+        name: doc.name,
+        playlists
+      });
+    }).catch((e) => {
+      res.status(400).send(e);
+    });
 });
 
 app.listen(port, () => {

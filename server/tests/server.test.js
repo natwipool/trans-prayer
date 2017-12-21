@@ -7,10 +7,10 @@ const { Playlist } = require('./../models/playlist');
 
 const playlists = [{
   name: 'First test playlist',
-  list: ['บทสวดมนต์ ๑', 'บทสวดมนต์ ๒', 'บทสวดมนต์ ๓']
+  list: ['คำบูชาพระรัตนตรัย', 'ปุพพภาคนมการ', 'ท๎วัตติงสาการปาฐะ']
 }, {
   name: 'Second test playlist',
-  list: ['บทสวดมนต์ ๔', 'บทสวดมนต์ ๕', 'บทสวดมนต์ ๖']
+  list: ['พุทธาภิถุติง', 'ธัมมาภิถุติง', 'สังฆาภิถุติง']
 }]
 
 beforeEach((done) => {
