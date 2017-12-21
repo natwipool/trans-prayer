@@ -3,9 +3,12 @@ const bodyParser = require('body-parser');
 
 const { mongoose } = require('mongoose');
 const { TransPrayer } = require('./models/trans-prayer');
+const { Playlist } = require('./models/playlist');
 
 var app = express();
 const port = process.env.PORT || 3000;
+
+app.use(bodyParser.json());
 
 app.get('/trans-prayer', (req, res) => {
   TransPrayer.find().then((prayers) => {
@@ -43,6 +46,19 @@ app.get('/trans-prayer/3', (req, res) => {
   }).catch((e) => {
     res.status(400).send();
   })
+});
+
+app.post('/playlist', (req, res) => {
+  var playlist = new Playlist({
+    name: req.body.name,
+    list: req.body.list
+  });
+
+  playlist.save(playlist).then((playlist) => {
+    res.send({ playlist });
+  }).catch((e) => {
+    res.status(400).send(e);
+  });
 });
 
 app.listen(port, () => {
