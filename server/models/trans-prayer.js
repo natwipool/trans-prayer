@@ -1,5 +1,7 @@
 var { mongoose } = require('./../db/mongoose');
 
+var { transPrayers } = require('./trans-prayer-db');
+
 var TransPrayer = mongoose.model('TransPrayer', {
   precept: {
     type: String,
@@ -9,38 +11,28 @@ var TransPrayer = mongoose.model('TransPrayer', {
   },
   category: {
     type: String,
-    enum: ['บททำวัตร', 'บททั่วไป', 'บทกรวดน้ำ'],
+    enum: ['ภาค ๑ คำทำวัตรเช้า-เย็น', 'ภาต ๒ บทสวดมนต์พิเศษบางบท', 'ภาคผนวก'],
     required: true
+  }, 
+  sub_category: {
+    type: String
   },
   lyrics: [{
     type: String
-  }]
+  }],
+  filename: {
+    type: String,
+    default: null
+  },
+  duration: {
+    type: Number
+  }
 });
 
-// var prayer = new TransPrayer({
-//   precept: 'บทนมัสการพระรัตนตรัย',
-//   category: 'บททั่วไป',
-//   lyrics: [
-//             'อรหํ สมฺมา สมฺพุทฺโธ ภควา', 'พุทฺธํ ภควนฺตํ อภิวาเทมิ', '(กราบ)',
-//             'สวาขาโต ภควตา ธมฺโม', 'ธมฺมํ นมสฺสามิ', '(กราบ)',
-//             'สุปฏิปนฺโน ภควโต สาวกสงฺโฆ', 'สงฺฆงฺนมามิ', '(กราบ)'
-//           ]
-// });
-
-// var prayer = new TransPrayer({
-//   precept: 'บทกรวดน้ำอิมินา',
-//   category: 'บทกรวดน้ำ',
-//   lyrics: [
-//             'อิมินา ปุณฺญกมฺเมนะ', 'อุปชฺฌายา คุณุตตรา',
-//             'อาจะริยูปะการา จะ', 'มาตาปิตา จะ ญาตะกา',
-//             'สุริโย จันทิมา ราชา', 'คุณะวันตา นะราปิ จะ'
-//           ]
-// });
-
-// prayer.save().then((prayer) => {
-//   console.log(prayer);
-// }, (e) => {
-//   console.log(e);
-// });
+TransPrayer.remove().then(() => {
+  TransPrayer.insertMany(transPrayers);
+}).catch((e) => {
+  console.log("Error:", e);
+});
 
 module.exports = { TransPrayer };

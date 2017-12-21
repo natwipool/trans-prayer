@@ -17,7 +17,7 @@ app.get('/trans-prayer', (req, res) => {
 
 app.get('/trans-prayer/1', (req, res) => {
   TransPrayer.find({
-    category: 'บททำวัตร'
+    category: 'ภาค ๑ คำทำวัตรเช้า-เย็น'
   }).then((prayers) => {
     res.send({ prayers });
   }).catch((e) => {
@@ -27,7 +27,7 @@ app.get('/trans-prayer/1', (req, res) => {
 
 app.get('/trans-prayer/2', (req, res) => {
   TransPrayer.find({
-    category: 'บททั่วไป'
+    category: 'ภาต ๒ บทสวดมนต์พิเศษบางบท'
   }).then((prayers) => {
     res.send({ prayers });
   }).catch((e) => {
@@ -37,7 +37,7 @@ app.get('/trans-prayer/2', (req, res) => {
 
 app.get('/trans-prayer/3', (req, res) => {
   TransPrayer.find({
-    category: 'บทกรวดน้ำ'
+    category: 'ภาคผนวก'
   }).then((prayers) => {
     res.send({ prayers });
   }).catch((e) => {
