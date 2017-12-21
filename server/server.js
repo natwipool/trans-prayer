@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const { ObjectID } = require('mongodb');
 
 const { mongoose } = require('mongoose');
 const { TransPrayer } = require('./models/trans-prayer');
@@ -51,9 +52,13 @@ app.get('/trans-prayer/part03', (req, res) => {
 app.get('/trans-prayer/:id', (req, res) => {
   var id = req.params.id;
 
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
   TransPrayer.findById(id).then((prayer) => {
     if (!prayer) {
-      return res.status(400).send();
+      return res.status(404).send();
     }
 
     res.send({ prayer });
@@ -86,8 +91,16 @@ app.get('/playlist', (req, res) => {
 app.get('/playlist/:id', (req, res) => {
   var id = req.params.id;
 
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
   Playlist.findById(id).then((doc) => {
-      return Promise.all([
+    // if (!doc) {
+    //   return res.status(404).send();
+    // }  
+    
+    return Promise.all([
         doc,
         TransPrayer.find({
           precept: {
