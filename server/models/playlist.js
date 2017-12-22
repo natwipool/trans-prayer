@@ -7,7 +7,7 @@ var Playlist = mongoose.model('Playlist', {
     minlength: 1,
     trim: true
   },
-  list: [{
+  precepts: [{
     type: String
   }]
 })

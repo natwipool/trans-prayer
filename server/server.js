@@ -67,10 +67,10 @@ app.get('/trans-prayer/:id', (req, res) => {
   });
 });
 
-app.post('/playlist', (req, res) => {
+app.post('/playlists', (req, res) => {
   var playlist = new Playlist({
     name: req.body.name,
-    list: req.body.list
+    precepts: req.body.precepts
   });
 
   playlist.save(playlist).then((playlist) => {
@@ -80,7 +80,7 @@ app.post('/playlist', (req, res) => {
   });
 });
 
-app.get('/playlist', (req, res) => {
+app.get('/playlists', (req, res) => {
   Playlist.find().then((playlists) => {
     res.send({ playlists });
   }).catch((e) => {
@@ -88,7 +88,7 @@ app.get('/playlist', (req, res) => {
   });
 });
 
-app.get('/playlist/:id', (req, res) => {
+app.get('/playlists/:id', (req, res) => {
   var id = req.params.id;
 
   if (!ObjectID.isValid(id)) {
@@ -104,7 +104,7 @@ app.get('/playlist/:id', (req, res) => {
         doc,
         TransPrayer.find({
           precept: {
-            $in: doc.list
+            $in: doc.precepts
           }
         })
       ]);
@@ -117,6 +117,43 @@ app.get('/playlist/:id', (req, res) => {
       res.status(400).send(e);
     });
 });
+
+app.delete('/playlists/:id', (req, res) => {
+  var id = req.params.id;
+
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  Playlist.findByIdAndRemove(id).then((playlist) => {
+    if (!playlist) {
+      return res.status(404).send();
+    }
+
+    res.send({ playlist });
+  }).catch((e) => {
+    res.status(400).send();
+  });
+});
+
+// app.delete('/playlists/:id/precept', (req, res) => {
+//   var id = req.params.id;
+//   var pre
+
+//   if (!ObjectID.isValid(id)) {
+//     return res.status(404).send();
+//   }
+
+//   Playlist.findByIdAndRemove(id).then((doc) => {
+//     if (!doc) {
+//       return res.status(404).send();
+//     }
+
+//     res.send({ doc });
+//   }).catch((e) => {
+//     res.status(400).send();
+//   });
+// });
 
 app.listen(port, () => {
   console.log(`started up at port ${port}`);

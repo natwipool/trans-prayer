@@ -1,16 +1,19 @@
 const expect = require('expect');
 const request = require('supertest');
+const { ObjectID } = require('mongodb');
 
 const { app } = require('./../server');
 const { TransPrayer } = require('./../models/trans-prayer');
 const { Playlist } = require('./../models/playlist');
 
 const playlists = [{
+  _id: new ObjectID(),
   name: 'First test playlist',
-  list: ['คำบูชาพระรัตนตรัย', 'ปุพพภาคนมการ', 'ท๎วัตติงสาการปาฐะ']
+  precepts: ['คำบูชาพระรัตนตรัย', 'ปุพพภาคนมการ', 'ท๎วัตติงสาการปาฐะ']
 }, {
+  _id: new ObjectID(),
   name: 'Second test playlist',
-  list: ['พุทธาภิถุติง', 'ธัมมาภิถุติง', 'สังฆาภิถุติง']
+  precepts: ['พุทธาภิถุติง', 'ธัมมาภิถุติง', 'สังฆาภิถุติง']
 }]
 
 beforeEach((done) => {
@@ -31,18 +34,18 @@ describe('GET /trans-prayer', () => {
   }); 
 });
 
-describe('POST /playlist', () => {
+describe('POST /playlists', () => {
   it('should create a new playlist', (done) => {
     var name = 'Test Playlist';
-    var list = ['คำบูชาพระรัตนตรัย', 'ปุพพภาคนมการ', 'พุทธาภิถุติง', 'ธัมมาภิถุติง', 'สังฆาภิถุติง'];
+    var precepts = ['คำบูชาพระรัตนตรัย', 'ปุพพภาคนมการ', 'พุทธาภิถุติง', 'ธัมมาภิถุติง', 'สังฆาภิถุติง'];
 
     request(app)
-      .post('/playlist')
-      .send({ name, list })
+      .post('/playlists')
+      .send({ name, precepts })
       .expect(200)
       .expect((res) => {
         expect(res.body.playlist.name).toBe(name);
-        expect(res.body.playlist.list).toEqual(list);
+        expect(res.body.playlist.precepts).toEqual(precepts);
       })
       .end((err, res) => {
         if (err) {
@@ -52,7 +55,7 @@ describe('POST /playlist', () => {
         Playlist.find({ name }).then((playlists) => {
           expect(playlists.length).toBe(1);
           expect(playlists[0].name).toBe(name);
-          expect(playlists[0].list).toEqual(expect.arrayContaining(list));
+          expect(playlists[0].precepts).toEqual(expect.arrayContaining(precepts));
           done();
         }).catch((e) => done(e));
       });
@@ -60,7 +63,7 @@ describe('POST /playlist', () => {
 
   it('should not create playlist with invalid data', (done) => {
     request(app)
-      .post('/playlist')
+      .post('/playlists')
       .send({})
       .expect(400)
       .end((err, res) => {
@@ -76,10 +79,10 @@ describe('POST /playlist', () => {
   });
 });
 
-describe('GET /playlist', () => {
+describe('GET /playlists', () => {
   it('should get all playlists', (done) => {
     request(app)
-      .get('/playlist')
+      .get('/playlists')
       .expect(200)
       .expect((res) => {
         expect(res.body.playlists.length).toBe(2);
@@ -87,3 +90,73 @@ describe('GET /playlist', () => {
       .end(done);
   });
 });
+
+describe('GET /playlists/:id', () => {
+  it('should get playlist by id', (done) => {
+    request(app)
+      .get(`/playlists/${playlists[0]._id.toHexString()}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.name).toBe(playlists[0].name)
+        expect(res.body.playlists[0].precept).toBe(playlists[0].precepts[0])
+      })
+      .end(done);
+  });
+
+  it('should get 404 if todo not found', (done) => {
+    var hexId = new ObjectID().toHexString();
+
+    request(app)
+      .get(`/playlists/${hexId}`)
+      .expect(404)
+      .end(done);
+  });
+
+  it('should get 404 for invalid object ids', (done) => {
+    request(app)
+      .get('/playlists/123abc')
+      .expect(404)
+      .end(done);
+  });
+});
+
+describe('DELETE /playlists/:id', () => {
+  it('should remove a todo', (done) => {
+    var hexId = playlists[1]._id.toHexString();
+
+    request(app)
+      .delete(`/playlists/${hexId}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.playlist._id).toBe(hexId);
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        Playlist.findById(hexId).then((playlist) => {
+          expect(playlist).toBeFalsy();
+          done();
+        }).catch((e) => done(e));
+      })
+
+  });
+
+  it('should return 404 if todo not found', (done) => {
+    var id = new ObjectID().toHexString();
+
+    request(app)
+      .delete(`/playlists/${id}`)
+      .expect(404)
+      .end(done);
+  });
+
+  it('should return 404 if invalid object ids', (done) => {
+    request(app)
+      .delete('/playlists/123')
+      .expect(404)
+      .end(done);
+  });
+});
+
