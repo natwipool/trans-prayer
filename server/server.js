@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
 const { ObjectID } = require('mongodb');
@@ -120,7 +121,7 @@ app.get('/playlists/:id', (req, res) => {
 
 app.delete('/playlists/:id', (req, res) => {
   var id = req.params.id;
-
+  
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
@@ -138,24 +139,58 @@ app.delete('/playlists/:id', (req, res) => {
 
 app.delete('/playlists/:id/precept', (req, res) => {
   var id = req.params.id;
-  var precepts = req.body.precepts;
+  var precepts = _.pick(req.body, ['precepts']); // precepts is array
 
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
 
-  Playlist.findByIdAndUpdate(id, 
-    { $pull: { precepts } },
-    { new: true }
-  ).then((playlist) => {
-    if (!playlist) {
-      return res.status(404).send();
+  Playlist.findByIdAndUpdate(
+    id,
+    {
+      $pullAll: precepts
+    },
+    {
+      new: true
     }
+  )
+    .then(playlist => {
+      if (!playlist) {
+        return res.status(404).send();
+      }
 
-    res.send({ playlist });
-  }).catch((e) => {
-    res.status(400).send();
-  });
+      res.send({ playlist });
+    })
+    .catch(e => {
+      res.status(400).send();
+    });
+});
+
+app.patch('/playlists/:id', (req, res) => {
+  var id = req.params.id;
+  var precepts = _.pick(req.body, ["precepts"]); // precepts is array
+
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  Playlist.findByIdAndUpdate(
+    id,
+    {
+      $pushAll: precepts 
+    },
+    { new: true }
+  )
+    .then(playlist => {
+      if (!playlist) {
+        return res.status(404).send();
+      }
+
+      res.send({ playlist });
+    })
+    .catch(e => {
+      res.status(400).send();
+    });
 });
 
 app.listen(port, () => {

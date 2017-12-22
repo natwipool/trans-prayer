@@ -163,7 +163,7 @@ describe('DELETE /playlists/:id', () => {
 describe('DELETE /playlists/:id/precept', () => {
   it('should delete playlist precept', (done) => {
     var hexId = playlists[1]._id.toHexString();
-    var precepts = 'สังฆาภิถุติง';
+    var precepts = ['สังฆาภิถุติง'];
 
     request(app)
       .delete(`/playlists/${hexId}/precept`)
@@ -173,11 +173,15 @@ describe('DELETE /playlists/:id/precept', () => {
         expect(res.body.playlist.precepts).not.toEqual(playlists[1].precepts);
       })
       .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+        
         Playlist.findById(hexId).then((doc) => {
           expect(doc.precepts.length).toBe(2);
           expect(doc.precepts).not.toEqual(playlists[1].precepts);
           done();
-        }).catch((e) => done());
+        }).catch((e) => done(e));
       });
   });
 
@@ -195,6 +199,33 @@ describe('DELETE /playlists/:id/precept', () => {
       .delete('/playlists/123/precept')
       .expect(404)
       .end(done);
+  });
+});
+
+describe('PATCH /playlists/:id', () => {
+  it('should update the playlist', (done) => {
+    var hexId = playlists[0]._id.toHexString();
+    var precepts = ['test update playlist', 'another one'];
+
+    request(app)
+      .patch(`/playlists/${hexId}`)
+      .send({ precepts })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.playlist.precepts).toEqual(expect.arrayContaining(precepts));
+        expect(res.body.playlist.precepts.length).toBe(5);
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+        
+        Playlist.findById(hexId).then((playlist) => {
+          expect(playlist.precepts).toEqual(expect.arrayContaining(precepts));
+          expect(playlist.precepts.length).toBe(5);
+          done();
+        }).catch((e) => done(e));  
+      });
   });
 });
 
