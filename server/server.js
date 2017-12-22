@@ -136,24 +136,27 @@ app.delete('/playlists/:id', (req, res) => {
   });
 });
 
-// app.delete('/playlists/:id/precept', (req, res) => {
-//   var id = req.params.id;
-//   var pre
+app.delete('/playlists/:id/precept', (req, res) => {
+  var id = req.params.id;
+  var precepts = req.body.precepts;
 
-//   if (!ObjectID.isValid(id)) {
-//     return res.status(404).send();
-//   }
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
 
-//   Playlist.findByIdAndRemove(id).then((doc) => {
-//     if (!doc) {
-//       return res.status(404).send();
-//     }
+  Playlist.findByIdAndUpdate(id, 
+    { $pull: { precepts } },
+    { new: true }
+  ).then((playlist) => {
+    if (!playlist) {
+      return res.status(404).send();
+    }
 
-//     res.send({ doc });
-//   }).catch((e) => {
-//     res.status(400).send();
-//   });
-// });
+    res.send({ playlist });
+  }).catch((e) => {
+    res.status(400).send();
+  });
+});
 
 app.listen(port, () => {
   console.log(`started up at port ${port}`);
