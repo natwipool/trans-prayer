@@ -103,7 +103,7 @@ describe('GET /playlists/:id', () => {
       .end(done);
   });
 
-  it('should get 404 if todo not found', (done) => {
+  it('should get 404 if playlists not found', (done) => {
     var hexId = new ObjectID().toHexString();
 
     request(app)
@@ -121,7 +121,7 @@ describe('GET /playlists/:id', () => {
 });
 
 describe('DELETE /playlists/:id', () => {
-  it('should remove a todo', (done) => {
+  it('should remove a playlists', (done) => {
     var hexId = playlists[1]._id.toHexString();
 
     request(app)
@@ -143,7 +143,7 @@ describe('DELETE /playlists/:id', () => {
 
   });
 
-  it('should return 404 if todo not found', (done) => {
+  it('should return 404 if playlists not found', (done) => {
     var id = new ObjectID().toHexString();
 
     request(app)
@@ -155,6 +155,44 @@ describe('DELETE /playlists/:id', () => {
   it('should return 404 if invalid object ids', (done) => {
     request(app)
       .delete('/playlists/123')
+      .expect(404)
+      .end(done);
+  });
+});
+
+describe('DELETE /playlists/:id/precept', () => {
+  it('should delete playlist precept', (done) => {
+    var hexId = playlists[1]._id.toHexString();
+    var precepts = 'สังฆาภิถุติง';
+
+    request(app)
+      .delete(`/playlists/${hexId}/precept`)
+      .send({ precepts })
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.playlist.precepts).not.toEqual(playlists[1].precepts);
+      })
+      .end((err, res) => {
+        Playlist.findById(hexId).then((doc) => {
+          expect(doc.precepts.length).toBe(2);
+          expect(doc.precepts).not.toEqual(playlists[1].precepts);
+          done();
+        }).catch((e) => done());
+      });
+  });
+
+  it('should return 404 if playlist not found', (done) => {
+    var id = new ObjectID().toHexString();
+
+    request(app)
+      .delete(`/playlists/${id}/precept`)
+      .expect(404)
+      .end(done);
+  });
+
+  it('should return 404 if invalid object ids', (done) => {
+    request(app)
+      .delete('/playlists/123/precept')
       .expect(404)
       .end(done);
   });
