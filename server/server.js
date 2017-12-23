@@ -137,50 +137,42 @@ app.delete('/playlists/:id', (req, res) => {
   });
 });
 
-app.delete('/playlists/:id/precept', (req, res) => {
+app.patch('/playlists/:id', (req, res) => {
   var id = req.params.id;
-  var precepts = _.pick(req.body, ['precepts']); // precepts is array
+  var body = _.pick(req.body, ['name', 'remove', 'add']);
 
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
 
-  Playlist.findByIdAndUpdate(
-    id,
-    {
-      $pullAll: precepts
-    },
-    {
-      new: true
-    }
-  )
+  Playlist.findById(id)
     .then(playlist => {
       if (!playlist) {
         return res.status(404).send();
       }
 
-      res.send({ playlist });
+      if (body.name) {
+        playlist.name = body.name;
+      }
+
+      if (body.remove) {
+        _.pullAll(playlist.precepts, body.remove);
+      }
+
+      if (body.add) {
+        playlist.precepts = _.concat(playlist.precepts, body.add);
+      }
+
+      return Playlist.findByIdAndUpdate(
+        id,
+        {
+          $set: playlist
+        },
+        {
+          new: true
+        }
+      );
     })
-    .catch(e => {
-      res.status(400).send();
-    });
-});
-
-app.patch('/playlists/:id', (req, res) => {
-  var id = req.params.id;
-  var precepts = _.pick(req.body, ["precepts"]); // precepts is array
-
-  if (!ObjectID.isValid(id)) {
-    return res.status(404).send();
-  }
-
-  Playlist.findByIdAndUpdate(
-    id,
-    {
-      $pushAll: precepts 
-    },
-    { new: true }
-  )
     .then(playlist => {
       if (!playlist) {
         return res.status(404).send();
