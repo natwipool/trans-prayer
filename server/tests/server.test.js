@@ -164,7 +164,7 @@ describe('PATCH /playlists/:id', () => {
   it('should update the playlist', (done) => {
     var hexId = playlists[0]._id.toHexString();
     var name = 'test update playlist name';
-    var add = ['123', 'abc'];
+    var add = ['ภารสุตตคาถา', 'ภัทเทกรัตตคาถา'];
     var remove = ['คำบูชาพระรัตนตรัย', 'ท๎วัตติงสาการปาฐะ'];
 
     request(app)
