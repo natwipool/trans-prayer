@@ -1,4 +1,4 @@
-var { mongoose } = require('./../db/mongoose');
+const mongoose = require('mongoose');
 
 var Playlist = mongoose.model('Playlist', {
   name: {

@@ -1,6 +1,6 @@
-var { mongoose } = require('./../db/mongoose');
+const { mongoose } = require('./../db/mongoose');
 
-var { transPrayers } = require('./trans-prayer-db');
+const { transPrayers } = require('./../db/trans-prayer-db');
 
 var TransPrayer = mongoose.model('TransPrayer', {
   precept: {
