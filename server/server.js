@@ -100,25 +100,24 @@ app.get('/playlists/:id', (req, res) => {
     return res.status(404).send();
   }
 
-  Playlist.findById(id).then((doc) => {
-    if (!doc) {
-      return res.status(404).send();
-    }  
-    
-    return Promise.all([
-        doc,
-        TransPrayer.find({
-          precept: {
-            $in: doc.precepts
-          }
-        })
-      ]);
-    }).then(([doc, playlists]) => {
-      res.send({
-        name: doc.name,
-        playlists
+  Playlist.findById(id)
+    .then((doc) => {
+      if (!doc) {
+        return res.status(404).send();
+      }
+
+      return TransPrayer.find({
+        precept: {
+          $in: doc.precepts
+        }
+      }).then((playlists) => {
+        res.send({ 
+          name: doc.name,
+          playlists 
+        });
       });
-    }).catch((e) => {
+    })
+    .catch((e) => {
       res.status(400).send(e);
     });
 });
@@ -206,6 +205,18 @@ app.post('/users', (req, res) => {
 
 app.get('/users/me', authenticate, (req, res) => {
   res.send(req.user);
+});
+
+app.post('/users/login', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
+  
+  User.findByCredentials(body.email, body.password).then((user) => {
+    return user.generateAuthToken().then((token) => {
+      res.header('x-auth', token).send(user);
+    });
+  }).catch((e) => {
+    res.status(400).send();
+  });
 });
 
 app.listen(port, () => {
