@@ -1,7 +1,5 @@
 const { mongoose } = require('./../db/mongoose');
 
-const { transPrayers } = require('./../db/trans-prayer-db');
-
 var TransPrayer = mongoose.model('TransPrayer', {
   precept: {
     type: String,
@@ -27,12 +25,6 @@ var TransPrayer = mongoose.model('TransPrayer', {
   duration: {
     type: Number
   }
-});
-
-TransPrayer.remove().then(() => {
-  TransPrayer.insertMany(transPrayers);
-}).catch((e) => {
-  console.log("Error:", e);
 });
 
 module.exports = { TransPrayer };
