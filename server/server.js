@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const { ObjectID } = require('mongodb');
 
 const { mongoose } = require('mongoose');
-const { transPrayers } = require('./db/trans-prayer-db');
+// const { transPrayers } = require('./db/trans-prayer-db');
 const { TransPrayer } = require('./models/trans-prayer');
 const { Playlist } = require('./models/playlist');
 const { User } = require('./models/user');
@@ -17,11 +17,11 @@ const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
-TransPrayer.remove().then(() => {
-  TransPrayer.insertMany(transPrayers);
-}).catch((e) => {
-  console.log("Error:", e);
-});
+// TransPrayer.remove().then(() => {
+//   TransPrayer.insertMany(transPrayers);
+// }).catch((e) => {
+//   console.log("Error:", e);
+// });
 
 app.get('/trans-prayer', (req, res) => {
   TransPrayer.find().then((prayers) => {
