@@ -9,7 +9,11 @@ var Playlist = mongoose.model('Playlist', {
   },
   precepts: [{
     type: String
-  }]
+  }],
+  _creator: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
+  }
 })
 
 module.exports = { Playlist };

@@ -72,10 +72,11 @@ app.get('/trans-prayer/:id', (req, res) => {
   });
 });
 
-app.post('/playlists', (req, res) => {
+app.post('/playlists',authenticate, (req, res) => {
   var playlist = new Playlist({
     name: req.body.name,
-    precepts: req.body.precepts
+    precepts: req.body.precepts,
+    _creator: req.user._id
   });
 
   playlist.save(playlist).then((playlist) => {
@@ -85,22 +86,27 @@ app.post('/playlists', (req, res) => {
   });
 });
 
-app.get('/playlists', (req, res) => {
-  Playlist.find().then((playlists) => {
+app.get('/playlists', authenticate, (req, res) => {
+  Playlist.find({
+    _creator: req.user._id
+  }).then((playlists) => {
     res.send({ playlists });
   }).catch((e) => {
     res.status(400).send();
   });
 });
 
-app.get('/playlists/:id', (req, res) => {
+app.get('/playlists/:id', authenticate, (req, res) => {
   var id = req.params.id;
 
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
 
-  Playlist.findById(id)
+  Playlist.findOne({
+    _id: id,
+    _creator: req.user._id // user who currently login
+  })
     .then((doc) => {
       if (!doc) {
         return res.status(404).send();
@@ -122,14 +128,17 @@ app.get('/playlists/:id', (req, res) => {
     });
 });
 
-app.delete('/playlists/:id', (req, res) => {
+app.delete('/playlists/:id', authenticate,(req, res) => {
   var id = req.params.id;
   
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
 
-  Playlist.findByIdAndRemove(id).then((playlist) => {
+  Playlist.findOneAndRemove({
+    _id: id,
+    _creator: req.user._id
+  }).then((playlist) => {
     if (!playlist) {
       return res.status(404).send();
     }
@@ -140,7 +149,7 @@ app.delete('/playlists/:id', (req, res) => {
   });
 });
 
-app.patch('/playlists/:id', (req, res) => {
+app.patch('/playlists/:id', authenticate, (req, res) => {
   var id = req.params.id;
   var body = _.pick(req.body, ['name', 'remove', 'add']);
 
@@ -148,7 +157,10 @@ app.patch('/playlists/:id', (req, res) => {
     return res.status(404).send();
   }
 
-  Playlist.findById(id)
+  Playlist.findOne({
+    _id: id,
+    _creator: req.user._id
+  })
     .then(playlist => {
       if (!playlist) {
         return res.status(404).send();
@@ -166,8 +178,11 @@ app.patch('/playlists/:id', (req, res) => {
         playlist.precepts = _.concat(playlist.precepts, body.add);
       }
 
-      return Playlist.findByIdAndUpdate(
-        id,
+      return Playlist.findOneAndUpdate(
+        {
+          _id: id,
+          _creator: req.user._id
+        },
         {
           $set: playlist
         },

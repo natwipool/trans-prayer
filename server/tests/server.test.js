@@ -30,6 +30,7 @@ describe('POST /playlists', () => {
 
     request(app)
       .post('/playlists')
+      .set('x-auth', users[0].tokens[0].token)
       .send({ name, precepts })
       .expect(200)
       .expect((res) => {
@@ -53,6 +54,7 @@ describe('POST /playlists', () => {
   it('should not create playlist with invalid data', (done) => {
     request(app)
       .post('/playlists')
+      .set('x-auth', users[0].tokens[0].token)
       .send({})
       .expect(400)
       .end((err, res) => {
@@ -69,21 +71,23 @@ describe('POST /playlists', () => {
 });
 
 describe('GET /playlists', () => {
-  it('should get all playlists', (done) => {
+  it('should get playlists', (done) => {
     request(app)
       .get('/playlists')
+      .set('x-auth', users[0].tokens[0].token)
       .expect(200)
       .expect((res) => {
-        expect(res.body.playlists.length).toBe(2);
+        expect(res.body.playlists.length).toBe(1);
       })
       .end(done);
   });
 });
 
 describe('GET /playlists/:id', () => {
-  it('should get playlist by id', (done) => {
+  it('should return playlist by id', (done) => {
     request(app)
       .get(`/playlists/${playlists[0]._id.toHexString()}`)
+      .set('x-auth', users[0].tokens[0].token)
       .expect(200)
       .expect((res) => {
         expect(res.body.name).toBe(playlists[0].name)
@@ -92,18 +96,28 @@ describe('GET /playlists/:id', () => {
       .end(done);
   });
 
-  it('should get 404 if playlists not found', (done) => {
-    var hexId = new ObjectID().toHexString();
-
+  it('should not return playlist created by other user', (done) => {
     request(app)
-      .get(`/playlists/${hexId}`)
+      .get(`/playlists/${playlists[1]._id.toHexString()}`)
+      .set('x-auth', users[0].tokens[0].token)
       .expect(404)
       .end(done);
   });
 
-  it('should get 404 for invalid object ids', (done) => {
+  it('should return 404 if playlists not found', (done) => {
+    var hexId = new ObjectID().toHexString();
+
+    request(app)
+      .get(`/playlists/${hexId}`)
+      .set('x-auth', users[0].tokens[0].token)
+      .expect(404)
+      .end(done);
+  });
+
+  it('should return 404 for invalid object ids', (done) => {
     request(app)
       .get('/playlists/123abc')
+      .set('x-auth', users[0].tokens[0].token)
       .expect(404)
       .end(done);
   });
@@ -115,6 +129,7 @@ describe('DELETE /playlists/:id', () => {
 
     request(app)
       .delete(`/playlists/${hexId}`)
+      .set('x-auth', users[1].tokens[0].token)
       .expect(200)
       .expect((res) => {
         expect(res.body.playlist._id).toBe(hexId);
@@ -128,8 +143,26 @@ describe('DELETE /playlists/:id', () => {
           expect(playlist).toBeFalsy();
           done();
         }).catch((e) => done(e));
-      })
+      });
+  });
 
+  it('should not remove a playlists by other user', (done) => {
+    var hexId = playlists[0]._id.toHexString();
+
+    request(app)
+      .delete(`/playlists/${hexId}`)
+      .set('x-auth', users[1].tokens[0].token)
+      .expect(404)
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        Playlist.findById(hexId).then((playlist) => {
+          expect(playlist).toBeTruthy();
+          done();
+        }).catch((e) => done(e));
+      });
   });
 
   it('should return 404 if playlists not found', (done) => {
@@ -137,6 +170,7 @@ describe('DELETE /playlists/:id', () => {
 
     request(app)
       .delete(`/playlists/${id}`)
+      .set('x-auth', users[1].tokens[0].token)
       .expect(404)
       .end(done);
   });
@@ -144,6 +178,7 @@ describe('DELETE /playlists/:id', () => {
   it('should return 404 if invalid object ids', (done) => {
     request(app)
       .delete('/playlists/123')
+      .set('x-auth', users[1].tokens[0].token)
       .expect(404)
       .end(done);
   });
@@ -158,6 +193,7 @@ describe('PATCH /playlists/:id', () => {
 
     request(app)
       .patch(`/playlists/${hexId}`)
+      .set('x-auth', users[0].tokens[0].token)
       .send({ name, add, remove })
       .expect(200)
       .expect((res) => {
@@ -177,6 +213,20 @@ describe('PATCH /playlists/:id', () => {
           done();
         }).catch((e) => done(e));  
       });
+  });
+
+  it('should not update the playlist created by oter user', (done) => {
+    var hexId = playlists[0]._id.toHexString();
+    var name = 'test update playlist name';
+    var add = ['ภารสุตตคาถา', 'ภัทเทกรัตตคาถา'];
+    var remove = ['คำบูชาพระรัตนตรัย', 'ท๎วัตติงสาการปาฐะ'];
+
+    request(app)
+      .patch(`/playlists/${hexId}`)
+      .set('x-auth', users[1].tokens[0].token)
+      .send({ name, add, remove })
+      .expect(404)
+      .end(done);
   });
 });
 
@@ -266,7 +316,7 @@ describe('POST /users/login', () => {
         }
 
         User.findById(users[1]._id).then((user) => {
-          expect(user.toObject().tokens[0]).toMatchObject({
+          expect(user.toObject().tokens[1]).toMatchObject({
             access: 'auth',
             token: res.headers['x-auth']
           })
@@ -292,7 +342,7 @@ describe('POST /users/login', () => {
         }
 
         User.findById(users[1]._id).then((user) => {
-          expect(user.tokens.length).toBe(0);
+          expect(user.tokens.length).toBe(1);
           done();
         }).catch((e) => done(e));
       });

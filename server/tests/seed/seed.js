@@ -4,18 +4,20 @@ const jwt = require('jsonwebtoken');
 const { Playlist } = require('./../../models/playlist');
 const { User } = require('./../../models/user');
 
+const userOneId = new ObjectID();
+const userTwoId = new ObjectID();
+
 const playlists = [{
   _id: new ObjectID(),
   name: 'First test playlist',
-  precepts: ['คำบูชาพระรัตนตรัย', 'ปุพพภาคนมการ', 'ท๎วัตติงสาการปาฐะ']
+  precepts: ['คำบูชาพระรัตนตรัย', 'ปุพพภาคนมการ', 'ท๎วัตติงสาการปาฐะ'],
+  _creator: userOneId
 }, {
   _id: new ObjectID(),
   name: 'Second test playlist',
-  precepts: ['พุทธาภิถุติง', 'ธัมมาภิถุติง', 'สังฆาภิถุติง']
+  precepts: ['พุทธาภิถุติง', 'ธัมมาภิถุติง', 'สังฆาภิถุติง'],
+  _creator: userTwoId
 }];
-
-const userOneId = new ObjectID();
-const userTwoId = new ObjectID();
 
 const users = [{
   _id: userOneId,
@@ -28,7 +30,11 @@ const users = [{
 }, {
   _id: userTwoId,
   email: 'somsak@example.com',
-  password: 'userTwoPass'
+  password: 'userTwoPass',
+  tokens: [{
+    access: 'auth',
+    token: jwt.sign({ _id: userTwoId, access: 'auth' }, '123abc').toString()
+  }]
 }];
 
 const populatePlaylists = (done) => {
